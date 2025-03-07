@@ -45,7 +45,7 @@ end
 
 function test()
     disp('------------------ Rotational Cipher ------------------');
-    key = 321;
+    key = 512;
 
     plaintext = 'MyOriginalPassword123';
     encrypted = rotational_cipher(plaintext, key, 'e');
@@ -116,8 +116,8 @@ function encrypt_txt_file()
     
     % Plaintext Histogram
     subplot(2, 3, 1);
-    [counts, values] = histcounts(uint8(plaintext), 0:255); % Zliczanie wystąpień każdego znaku
-    bar(values(1:end-1), counts); % Rysowanie histogramu
+    [counts, values] = histcounts(uint8(plaintext), 0:255);
+    bar(values(1:end-1), counts);
     title('Plaintext Histogram');
     
     % Rotational cipher histograms
@@ -189,17 +189,17 @@ function encrypt_images()
     decrypted_rotational_a = cell(1, length(shifts));
     decrypted_rotational_b = cell(1, length(shifts));
     for i = 1:length(shifts)
-        decrypted_rotational_a{i} = rotational_cipher_image(encrypted_rotational_a{i}, shifts(i), 'd'); % Poprawiona linia
-        decrypted_rotational_b{i} = rotational_cipher_image(encrypted_rotational_b{i}, shifts(i), 'd'); % Poprawiona linia
+        decrypted_rotational_a{i} = rotational_cipher_image(encrypted_rotational_a{i}, shifts(i), 'd');
+        decrypted_rotational_b{i} = rotational_cipher_image(encrypted_rotational_b{i}, shifts(i), 'd');
         subplot(3, 4, i + 1); imshow(decrypted_rotational_a{i}); title(['Decrypted Rotational "a", shift ', num2str(shifts(i))]);
         subplot(3, 4, i + 2 + n); imshow(decrypted_rotational_b{i}); title(['Decrypted Rotational "b", shift ', num2str(shifts(i))]);
     end
 
     % Decrypted one-time pad cipher images
-    decrypted_one_time_a_20 = one_time_pad_cipher_image_key(encrypted_one_time_a_20, key_20, 'd'); % Poprawiona linia
-    decrypted_one_time_b_20 = one_time_pad_cipher_image_key(encrypted_one_time_b_20, key_20, 'd'); % Poprawiona linia
-    decrypted_one_time_a_65536 = one_time_pad_cipher_image_key(encrypted_one_time_a_65536, key_65536, 'd'); % Poprawiona linia
-    decrypted_one_time_b_65536 = one_time_pad_cipher_image_key(encrypted_one_time_b_65536, key_65536, 'd'); % Poprawiona linia
+    decrypted_one_time_a_20 = one_time_pad_cipher_image_key(encrypted_one_time_a_20, key_20, 'd');
+    decrypted_one_time_b_20 = one_time_pad_cipher_image_key(encrypted_one_time_b_20, key_20, 'd');
+    decrypted_one_time_a_65536 = one_time_pad_cipher_image_key(encrypted_one_time_a_65536, key_65536, 'd');
+    decrypted_one_time_b_65536 = one_time_pad_cipher_image_key(encrypted_one_time_b_65536, key_65536, 'd');
     subplot(3, 4, 2 * n + 3); imshow(decrypted_one_time_a_20); title('Decrypted One-time pad "a" key 20');
     subplot(3, 4, 2 * n + 4); imshow(decrypted_one_time_a_65536); title('Decrypted One-time pad "a" key 65536');
     subplot(3, 4, 2 * n + 5); imshow(decrypted_one_time_b_20); title('Decrypted One-time pad "b" key 20');
@@ -221,56 +221,60 @@ end
 function decrypt_data(decrypted_image_filename, encrypted_text_filename, passwords_filename)
     % Load passwords
     load(passwords_filename, 'hasla');
+    num_passwords = length(hasla);
 
+    % Load encrypted text
     openedFile = fopen(encrypted_text_filename, 'r');
     if openedFile == -1
-        error(['Nie mozna otworzyc pliku: ', encrypted_text_filename]);
+        error(['Cannot open file: ', encrypted_text_filename]);
     end
     encrypted_text_bin = fread(openedFile, 'uint8');
     fclose(openedFile);
 
-    encrypted_image = imread(decrypted_image_filename);
-    best_corr = -Inf;
-    best_key = [];
-    best_decrypted_image = [];
-
-    % Find key and decrypt - Text
-    num_passwords = length(hasla);
+    % Decrypting text
     for i = 1:num_passwords
-        key = hasla{i}; %2428!!!!
+        key = hasla{i};
         decrypted_text_bytes = one_time_pad_cipher(encrypted_text_bin, key, 'd');
-
         % Check if decrypted text is readable
         if all(decrypted_text_bytes >= 32 & decrypted_text_bytes <= 126)
-            disp(['Key found: hasla{' num2str(i) '}']);
-            disp(['Decrypted text: ', decrypted_text_bytes(:)']);
+            disp(['Key found for text: hasla{' num2str(i) '}']);
+            disp(['Decrypted text: ', char(decrypted_text_bytes(:))']);
         end
     end
 
-    % Find key and decrypt - Image
+    % Load encrypted image
+    encrypted_image = imread(decrypted_image_filename);
+
+    % Decrypting image
+    best_std = Inf;
+    best_key = [];
+    best_decrypted_image = [];
+
     for i = 1:num_passwords
-        key = hasla{i}; 
-
+        key = hasla{i};
         decrypted_image = one_time_pad_cipher_image_key(encrypted_image, key, 'd');
-        corr = max(xcorr(double(encrypted_image(:)), double(key)));
 
-        % Looking for best correlation
-        if corr > best_corr
-            best_corr = corr;
+        % Calculate standard deviation
+        std_dev = std2(decrypted_image); % Returns standard deviation of an image
+
+        if std_dev < best_std % Looking for best Standard deviation of matrix elements
+            best_std = std_dev;
             best_key = key;
             best_decrypted_image = decrypted_image;
         end
     end
 
     if ~isempty(best_key)
-        disp(['Best key found. corr: ', num2str(best_corr)]);
+        disp(['Best key found for image. std: ', num2str(best_std)]);
         figure;
         subplot(1, 2, 1); imshow(encrypted_image, []); title('Encrypted image');
         subplot(1, 2, 2); imshow(best_decrypted_image, []); title('Decrypted image');
+    else
+        disp('Key not found for image.');
     end
 end
 
-%test();
-%encrypt_txt_file();
-%encrypt_images();
-decrypt_data('dane zaszyfrowane/1.png', 'dane zaszyfrowane/1_tekst.txt', 'dane zaszyfrowane/hasla.mat');
+test();
+encrypt_txt_file();
+encrypt_images();
+%decrypt_data('dane zaszyfrowane/3.png', 'dane zaszyfrowane/3_tekst.txt', 'dane zaszyfrowane/hasla.mat');

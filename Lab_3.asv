@@ -69,7 +69,7 @@ function test()
     disp(['Encrypted: ', char(encrypted'), ' || In ASCII: ', num2str(encrypted')]);
     disp(['Decrypted: ', char(decrypted'), ' || In ASCII: ', num2str(decrypted')]);
 
-    key_65536 = randi([0, 255], 1, 65536); % 65536 = 256*256
+    key_65536 = randi([0, 255], 1, 65536);
     disp(['key length 65536: ', num2str(key_65536(1:10)), ' ...']);
 
     plaintext = 'MySecretMessage';

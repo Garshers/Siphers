@@ -54,10 +54,21 @@ This repository contains MATLAB functions implementing rotational and one-time p
 -   Encrypts the text from "PolishHistory.txt" using rotational and one-time pad ciphers.
 -   Generates histograms of the plaintext and encrypted data.
 
+### Histogram for Encrypted Text
+![Histogram for Encrypted Text](histogram_for_encrypted_text.png)
+
 ### `encrypt_images()`
 
 -   Encrypts "a.png" and "b.png" using rotational and one-time pad ciphers.
 -   Displays the original, encrypted, and decrypted images.
+
+### Encrypted Images
+
+![Encrypted Images](encrypted_images.png)
+
+### Decrypted Images
+
+![Decrypted Images](decrypted_images.png)
 
 ### `decrypt_data(decrypted_image_filename, encrypted_text_filename, passwords_filename)`
 
@@ -71,3 +82,5 @@ This repository contains MATLAB functions implementing rotational and one-time p
 3.  Ensure that "PolishHistory.txt", "a.png", "b.png" and the files used in decrypt_data function are in the correct directory.
 4.  To use the `decrypt_data` function, ensure that the `hasla.mat` file containing the keys is available.
 5.  Uncomment last line in the main script to run `decrypt_data` function.
+
+

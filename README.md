@@ -66,14 +66,15 @@ This repository contains MATLAB functions implementing rotational and one-time p
 
 ![Encrypted Images](encrypted_images.png)
 
-### Decrypted Images
-
-![Decrypted Images](decrypted_images.png)
 
 ### `decrypt_data(decrypted_image_filename, encrypted_text_filename, passwords_filename)`
 
 -   Decrypts an encrypted image and text file using a list of potential keys stored in a .mat file.
 -   Attempts to find the correct key by checking the readability of the decrypted text and the standard deviation of the decrypted image.
+
+### Decrypted Images
+
+![Decrypted Images](decrypted_images.png)
 
 ## Usage
 
